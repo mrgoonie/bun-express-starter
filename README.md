@@ -1,26 +1,32 @@
-# GitHub OAuth example in Express
+# Bun + Express + Prisma + Auth (Lucia)
 
-Uses SQLite (in-memory) database.
+Uses **PostgreSQL** database.
 
-```
-pnpm i
-pnpm dev
-```
+## Development
 
-## Setup
+Create `.env` from `.example.env`
 
-Create a GitHub OAuth app with the callback set to `http://localhost:3000/login/github/callback` and create an `.env` file.
+Then:
 
 ```bash
-GITHUB_CLIENT_ID=""
-GITHUB_CLIENT_SECRET=""
+bun i
+bun dev
 ```
 
-## Polyfill
+## Docker
 
-If you're using Node 16 or 18, uncomment the code in `lib/auth.ts`. This is not required in Node 20, Bun, and Cloudflare Workers.
-
-```ts
-// import { webcrypto } from "crypto";
-// globalThis.crypto = webcrypto as Crypto;
+```bash
+docker build -t local/bun-express-starter -f Dockerfile .
+docker run -p 3000:3000 local/bun-express-starter
 ```
+
+## Deploy
+
+```bash
+dx up
+# dx up --prod
+```
+
+## Author
+
+[Goon Nguyen](https://x.com/goon_nguyen)
