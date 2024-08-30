@@ -21,6 +21,7 @@ COPY --from=install /temp/prod/node_modules node_modules
 COPY src .
 COPY package.json .
 COPY prisma .
+COPY public .
 
 # generate prisma schema
 RUN bun run db
