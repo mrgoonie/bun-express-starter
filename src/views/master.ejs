@@ -1,0 +1,22 @@
+<html lang="en">
+    <!-- HEAD -->
+    <head>
+    <%- include('common/head', locals) %>
+    </head>
+
+    <!-- BODY -->
+    <body>
+        <!-- HEADER -->
+        <header></header>
+
+        <!-- CONTENT -->
+        <main>
+        <% if (typeof page !== 'undefined') { %>
+            <%- include(page, locals); %>
+        <% } %>
+        </main>
+
+        <!-- FOOTER -->
+        <footer></footer>
+    </body>
+</html>

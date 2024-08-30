@@ -1,0 +1,226 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider        = "prisma-client-js"
+    binaryTargets   = ["native", "linux-musl-openssl-3.0.x"]
+    previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+    provider = "postgresql"
+    // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
+    // Further reading:
+    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
+    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
+    url      = env("DATABASE_URL")
+}
+
+model Key {
+    id             String  @id @unique
+    hashedPassword String?
+    userId         String
+    activeExpires  BigInt
+    idleExpires    BigInt
+    user           User    @relation(references: [id], fields: [userId], onDelete: Cascade)
+
+    @@index([userId])
+}
+
+// Defines a session for user authentication, related to a specific user
+model Session {
+    id        String   @id
+    userId    String
+    user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
+    createdAt DateTime @default(now())
+    expiresAt DateTime
+}
+
+// Represents an account linked to a user, unique per provider-account ID combination
+model Account {
+    id                String @id
+    providerAccountId String @unique
+    provider          String
+
+    createdAt DateTime? @default(now())
+    updatedAt DateTime? @updatedAt
+
+    userId String
+    user   User?  @relation(fields: [userId], references: [id])
+
+    @@index([userId])
+}
+
+// User model capturing basic user information and relationships with other entities
+model User {
+    id         String  @id
+    name       String
+    password   String?
+    email      String?
+    image      String?
+    validEmail Boolean @default(false)
+
+    createdAt DateTime? @default(now())
+    updatedAt DateTime? @updatedAt
+
+    key                   Key[]
+    sessions              Session[]
+    accounts              Account[]
+    userRoles             UserRole[]
+    metaFile              MetaFile[]
+    emailVerificationCode EmailVerificationCode[]
+    workspace             Workspace[]
+    workspaceUserRole     WorkspaceUserRole[]
+    passwordResetToken    PasswordResetToken[]
+}
+
+model PasswordResetToken {
+    id        String @id @unique
+    userId    String
+    tokenHash String
+
+    createdAt DateTime @default(now())
+    expiresAt DateTime
+
+    user User @relation(fields: [userId], references: [id])
+}
+
+// Manages email verification codes for users
+model EmailVerificationCode {
+    id     String @id
+    userId String
+    code   String
+
+    createdAt DateTime @default(now())
+    expiresAt DateTime
+
+    user User @relation(fields: [userId], references: [id])
+}
+
+// Manages email verification tokens for users
+model EmailVerificationToken {
+    id        String @id
+    tokenHash String
+    email     String
+
+    createdAt DateTime @default(now())
+    expiresAt DateTime
+}
+
+// Defines roles within the system
+model Role {
+    id              String           @id
+    name            String           @unique
+    userRoles       UserRole[]
+    rolePermissions RolePermission[]
+}
+
+// Intermediary table for many-to-many relationship between users and roles
+model UserRole {
+    id     String @id
+    userId String
+    roleId String
+    user   User   @relation(fields: [userId], references: [id])
+    role   Role   @relation(fields: [roleId], references: [id])
+
+    @@unique([userId, roleId])
+}
+
+// Defines permissions within the system
+model Permission {
+    id              String           @id
+    name            String           @unique
+    rolePermissions RolePermission[]
+}
+
+// Intermediary table for many-to-many relationship between roles and permissions
+model RolePermission {
+    id           String     @id
+    roleId       String
+    permissionId String
+    role         Role       @relation(fields: [roleId], references: [id])
+    permission   Permission @relation(fields: [permissionId], references: [id])
+
+    @@unique([roleId, permissionId])
+}
+
+// Manages files or media associated with a user, including metadata
+model MetaFile {
+    id         String  @id
+    mimetype   String?
+    url        String?
+    blurBase64 String?
+    width      Int?
+    height     Int?
+    approved   Boolean @default(true)
+
+    createdAt DateTime? @default(now())
+
+    userId String
+    user   User   @relation(fields: [userId], references: [id])
+}
+
+// Represents a workspace or project area within the system
+model Workspace {
+    id          String  @id
+    name        String
+    slug        String  @unique
+    description String?
+    isPublic    Boolean @default(false)
+    creatorId   String
+    creator     User    @relation(fields: [creatorId], references: [id])
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime? @updatedAt
+
+    workspaceRoles     WorkspaceRole[]
+    workspaceUserRoles WorkspaceUserRole[]
+
+    @@unique([id, slug])
+    @@index([creatorId])
+}
+
+// Defines roles specific to a workspace
+model WorkspaceRole {
+    id          String @id
+    name        String
+    workspaceId String
+
+    workspace               Workspace                 @relation(fields: [workspaceId], references: [id])
+    workspaceUserRoles      WorkspaceUserRole[]
+    workspaceRolePermission WorkspaceRolePermission[]
+}
+
+// Intermediary table for many-to-many relationship between workspace users and roles
+model WorkspaceUserRole {
+    id              String        @id
+    workspaceId     String
+    workspace       Workspace     @relation(fields: [workspaceId], references: [id])
+    userId          String
+    user            User          @relation(fields: [userId], references: [id])
+    workspaceRoleId String
+    workspaceRole   WorkspaceRole @relation(fields: [workspaceRoleId], references: [id])
+}
+
+// Defines permissions within a workspace context
+model WorkspacePermission {
+    id                      String                    @id
+    name                    String                    @unique
+    workspaceRolePermission WorkspaceRolePermission[]
+}
+
+// Intermediary table for many-to-many relationship between workspace roles and permissions
+model WorkspaceRolePermission {
+    id String @id
+
+    workspaceRole         WorkspaceRole       @relation(fields: [workspaceRoleId], references: [id])
+    workspaceRoleId       String
+    workspacePermission   WorkspacePermission @relation(fields: [workspacePermissionId], references: [id])
+    workspacePermissionId String
+}
+
+enum Currency {
+    USD
+    VND
+    // ...
+}
