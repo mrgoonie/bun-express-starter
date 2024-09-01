@@ -8,5 +8,5 @@ loginRouter.use(githubLoginRouter);
 
 loginRouter.get("/login", async (_, res) => {
   if (res.locals.session) return res.redirect("/");
-  return res.render("master", { page: "login" });
+  return res.render("master", { page: "pages/login" });
 });

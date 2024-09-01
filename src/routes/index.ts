@@ -12,5 +12,5 @@ mainRouter.get("/", async (_, res) => {
     where: { id: res.locals.user.id },
   });
 
-  return res.render("master", { page: "index", user });
+  return res.render("master", { page: "pages/index", user });
 });

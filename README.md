@@ -18,14 +18,27 @@ bun dev
 ```bash
 docker build -t local/bun-express-starter -f Dockerfile .
 docker run -p 3000:3000 local/bun-express-starter
+# OR
+docker compose up
 ```
 
-## Deploy
+## Deploy with [DXUP](https://dxup.dev)
 
 ```bash
 dx up
 # dx up --prod
 ```
+
+## TODO
+
+- [x] Add authentication middleware
+- [ ] Linter, Semantic Release, CommitLint
+- [ ] Implement github login
+- [ ] tRPC
+- [ ] Swagger UI
+- [ ] Add error handling and logging
+- [ ] Implement rate limiting
+- [ ] Dark mode
 
 ## Author
 
